@@ -40,12 +40,7 @@ const schedule = [
     name: "🚀 Full Project",
     description: "9:30 – 10:30 PM. Work on your full project.",
   },
-  {
-  time: "22:35",
-  endTime: "22:36",
-  name: "🧪 Deadline Test",
-  description: "Testing automatic task expiration.",
-},
+  
 ];
 
 module.exports = schedule;
