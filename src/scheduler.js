@@ -19,33 +19,42 @@ const {
 } = require("./reminderManager");
 
 
-function getTodayDate(time) {
-  const now = new Date();
-
+function getTodayDate(time, baseDate = new Date()) {
   const [hours, minutes] = time.split(":");
 
-  now.setHours(
-    Number(hours),
-    Number(minutes),
-    0,
-    0
+  const dateString = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(baseDate);
+
+  const [year, month, day] = dateString.split("-");
+
+  const date = new Date(
+    `${year}-${month}-${day}T${hours}:${minutes}:00+05:30`
   );
 
-  return now;
+  return date;
 }
 
+function getIndiaTime() {
+  const now = new Date();
+
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(now);
+}
 
 function startScheduler(channel, userId) {
   cron.schedule(
     "* * * * *",
     async () => {
       try {
-        const now = new Date();
-
-        const hours = String(now.getHours()).padStart(2, "0");
-        const minutes = String(now.getMinutes()).padStart(2, "0");
-
-        const currentTime = `${hours}:${minutes}`;
+        const currentTime = getIndiaTime();
 
         const taskConfig = schedule.find(
           (item) => item.time === currentTime
@@ -54,12 +63,18 @@ function startScheduler(channel, userId) {
         if (!taskConfig) return;
 
         const scheduledAt = getTodayDate(
-          taskConfig.time
-        );
+  taskConfig.time
+);
 
-        const deadline = getTodayDate(
-          taskConfig.endTime
-        );
+let deadline = getTodayDate(
+  taskConfig.endTime
+);
+
+if (deadline <= scheduledAt) {
+  deadline = new Date(
+    deadline.getTime() + 24 * 60 * 60 * 1000
+  );
+}
 
         const dbTask = await createTask({
           taskName: taskConfig.name,
