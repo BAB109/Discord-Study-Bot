@@ -123,9 +123,9 @@ async function getTodayTasks(discordUserId) {
     FROM tasks
     WHERE discord_user_id = $1
       AND scheduled_at AT TIME ZONE 'Asia/Kolkata'
-          >= CURRENT_DATE
+          >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date
       AND scheduled_at AT TIME ZONE 'Asia/Kolkata'
-          < CURRENT_DATE + INTERVAL '1 day'
+          < (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date + INTERVAL '1 day'
     ORDER BY scheduled_at ASC;
   `;
 
@@ -147,9 +147,9 @@ async function getTodayStats(discordUserId) {
     FROM tasks
     WHERE discord_user_id = $1
       AND scheduled_at AT TIME ZONE 'Asia/Kolkata'
-          >= CURRENT_DATE
+          >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date
       AND scheduled_at AT TIME ZONE 'Asia/Kolkata'
-          < CURRENT_DATE + INTERVAL '1 day';
+          < (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date + INTERVAL '1 day';
   `;
 
   const result = await pool.query(query, [discordUserId]);
@@ -168,9 +168,9 @@ async function getWeekStats(discordUserId) {
     FROM tasks
     WHERE discord_user_id = $1
       AND scheduled_at AT TIME ZONE 'Asia/Kolkata'
-          >= CURRENT_DATE - INTERVAL '6 days'
+          >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date - INTERVAL '6 days'
       AND scheduled_at AT TIME ZONE 'Asia/Kolkata'
-          < CURRENT_DATE + INTERVAL '1 day';
+          < (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date + INTERVAL '1 day';
   `;
 
   const result = await pool.query(query, [discordUserId]);
@@ -239,10 +239,10 @@ async function getHistory(discordUserId, days = 7) {
     WHERE discord_user_id = $1
 
       AND scheduled_at AT TIME ZONE 'Asia/Kolkata'
-          >= CURRENT_DATE - ($2::integer - 1)
+          >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date - ($2::integer - 1)
 
       AND scheduled_at AT TIME ZONE 'Asia/Kolkata'
-          < CURRENT_DATE + INTERVAL '1 day'
+          < (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date + INTERVAL '1 day'
 
     GROUP BY study_date
     ORDER BY study_date DESC;
