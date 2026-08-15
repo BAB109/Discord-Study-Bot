@@ -63,28 +63,33 @@ function startScheduler(channel, userId) {
       try {
         const currentTime = getIndiaTime();
 
-        const taskConfig = schedule.find(
+        const allTasks = schedule.getAllTasks();
+
+        const taskConfig = allTasks.find(
           (item) => item.time === currentTime
         );
 
         if (!taskConfig) return;
 
+        const fullName =
+          `${taskConfig.emoji} ${taskConfig.name}`;
+
         const scheduledAt = getTodayDate(
-  taskConfig.time
-);
+          taskConfig.time
+        );
 
-let deadline = getTodayDate(
-  taskConfig.endTime
-);
+        let deadline = getTodayDate(
+          taskConfig.endTime
+        );
 
-if (deadline <= scheduledAt) {
-  deadline = new Date(
-    deadline.getTime() + 24 * 60 * 60 * 1000
-  );
-}
+        if (deadline <= scheduledAt) {
+          deadline = new Date(
+            deadline.getTime() + 24 * 60 * 60 * 1000
+          );
+        }
 
         const dbTask = await createTask({
-          taskName: taskConfig.name,
+          taskName: fullName,
           description: taskConfig.description,
           scheduledAt,
           deadline,
@@ -98,7 +103,7 @@ if (deadline <= scheduledAt) {
         await startTask(
           channel,
           userId,
-          taskConfig.name,
+          fullName,
           taskConfig.description,
           dbTask.id,
           deadline
