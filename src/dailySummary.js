@@ -2,13 +2,28 @@ const {
   getTodayTasks,
 } = require("./db/queries");
 
+// IST is UTC+5:30 (fixed offset, no DST)
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+
+function toIST(date) {
+  return new Date(new Date(date).getTime() + IST_OFFSET_MS);
+}
+
 function formatTime(date) {
-  return new Date(date).toLocaleTimeString("en-IN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-    timeZone: "Asia/Kolkata",
-  });
+  const ist = toIST(date);
+  let hours = ist.getUTCHours();
+  const minutes = String(ist.getUTCMinutes()).padStart(2, "0");
+  const ampm = hours >= 12 ? "pm" : "am";
+  hours = hours % 12 || 12;
+  return `${String(hours).padStart(2, "0")}:${minutes} ${ampm}`;
+}
+
+function getISTDateDisplay() {
+  const ist = toIST(new Date());
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const months = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+  return `${days[ist.getUTCDay()]}, ${ist.getUTCDate()} ${months[ist.getUTCMonth()]}`;
 }
 
 async function sendMorningSchedule(channel, userId) {
@@ -35,12 +50,7 @@ async function sendMorningSchedule(channel, userId) {
 
     await channel.send(
       `🌅 **GOOD MORNING**\n\n` +
-      `📅 **${new Date().toLocaleDateString("en-IN", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        timeZone: "Asia/Kolkata",
-      })}**\n\n` +
+      `📅 **${getISTDateDisplay()}**\n\n` +
       `**Today's Schedule**\n` +
       `━━━━━━━━━━━━━━━━━━\n\n` +
       `${taskList}\n\n` +

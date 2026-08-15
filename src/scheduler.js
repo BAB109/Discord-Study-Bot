@@ -19,17 +19,20 @@ const {
 } = require("./reminderManager");
 
 
+// IST is UTC+5:30 (fixed offset, no DST)
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+
+function toIST(date) {
+  return new Date(date.getTime() + IST_OFFSET_MS);
+}
+
 function getTodayDate(time, baseDate = new Date()) {
   const [hours, minutes] = time.split(":");
 
-  const dateString = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(baseDate);
-
-  const [year, month, day] = dateString.split("-");
+  const ist = toIST(baseDate);
+  const year = ist.getUTCFullYear();
+  const month = String(ist.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(ist.getUTCDate()).padStart(2, "0");
 
   const date = new Date(
     `${year}-${month}-${day}T${hours}:${minutes}:00+05:30`
@@ -39,14 +42,18 @@ function getTodayDate(time, baseDate = new Date()) {
 }
 
 function getIndiaTime() {
-  const now = new Date();
+  const ist = toIST(new Date());
+  const hours = String(ist.getUTCHours()).padStart(2, "0");
+  const minutes = String(ist.getUTCMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
 
-  return new Intl.DateTimeFormat("en-IN", {
-    timeZone: "Asia/Kolkata",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(now);
+function getIndiaDateString() {
+  const ist = toIST(new Date());
+  const year = ist.getUTCFullYear();
+  const month = String(ist.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(ist.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function startScheduler(channel, userId) {
@@ -124,21 +131,8 @@ function startMorningSchedule(channel, userId) {
   let lastSentDate = null;
 
   setInterval(async () => {
-    const now = new Date();
-
-    const indiaTime = new Intl.DateTimeFormat("en-IN", {
-      timeZone: "Asia/Kolkata",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }).format(now);
-
-    const today = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Kolkata",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(now);
+    const indiaTime = getIndiaTime();
+    const today = getIndiaDateString();
 
     if (
       indiaTime === "06:00" &&
@@ -160,21 +154,8 @@ function startNightlySummary(channel, userId) {
   let lastSentDate = null;
 
   setInterval(async () => {
-    const now = new Date();
-
-    const indiaTime = new Intl.DateTimeFormat("en-IN", {
-      timeZone: "Asia/Kolkata",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }).format(now);
-
-    const today = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Kolkata",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(now);
+    const indiaTime = getIndiaTime();
+    const today = getIndiaDateString();
 
     if (
       indiaTime === "22:30" &&
